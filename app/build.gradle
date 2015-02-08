@@ -26,4 +26,5 @@ dependencies {
     compile 'com.github.sebastianengel.actionbarpulltorefresh:extra-abc:1.0.0'
     compile 'com.android.support:appcompat-v7:21.0.3'
     compile 'com.android.support:support-v4:21.0.3'
+    compile project(':materialList')
 }

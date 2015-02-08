@@ -1,28 +1,18 @@
 package lbw.com.newsinfo.activity;
 
-import android.content.Intent;
 import android.content.res.Configuration;
-import android.content.res.TypedArray;
 import android.os.Bundle;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarDrawerToggle;
-import android.view.MenuItem;
 import android.view.View;
-import android.widget.AdapterView;
 import android.widget.FrameLayout;
-import android.widget.ListView;
-import android.widget.Toast;
-
-import java.util.ArrayList;
-
 import butterknife.ButterKnife;
 import butterknife.InjectView;
 import lbw.com.newsinfo.BaseActivity;
 import lbw.com.newsinfo.R;
-import lbw.com.newsinfo.adapter.DrawerAdapter;
-import lbw.com.newsinfo.entity.Items;
 import lbw.com.newsinfo.fragment.DrawerFragment;
+import lbw.com.newsinfo.fragment.FeedsFragment;
 import lbw.com.newsinfo.view.MultiSwipeRefreshLayout;
 
 public class MainActivity extends BaseActivity {
@@ -36,6 +26,7 @@ public class MainActivity extends BaseActivity {
     private CharSequence mTitle;
 
     private static FragmentManager mManager;
+    private FeedsFragment mContentFragment;
 
     private MultiSwipeRefreshLayout mSwipeRefreshLayout;
 
@@ -44,7 +35,7 @@ public class MainActivity extends BaseActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         ButterKnife.inject(this);
-        mTitle = mDrawerTitle = getTitle();
+        mDrawerTitle = getTitle();
         mDrawerToggle = new ActionBarDrawerToggle(
                 this,
                 mDrawerLayout,
@@ -64,8 +55,10 @@ public class MainActivity extends BaseActivity {
             }
         };
 
+        mTitle = getResources().getStringArray(R.array.drawer_titles)[0];
+        getSupportActionBar().setTitle(mTitle);
         mDrawerLayout.setDrawerListener(mDrawerToggle);
-        replaceFragment(R.id.left_drawer,new DrawerFragment());
+        replaceFragment(R.id.left_drawer, new DrawerFragment());
     }
 
     @Override
@@ -80,8 +73,13 @@ public class MainActivity extends BaseActivity {
         mDrawerToggle.onConfigurationChanged(newConfig);
     }
 
-    public void closeDrawer(String title){
-        mTitle=title;
+
+    public void setNewsData(String title) {
         mDrawerLayout.closeDrawers();
-    };
+        if (mTitle == title)
+            return;
+        mTitle = title;
+        mContentFragment=FeedsFragment.newInstance(title);
+        replaceFragment(R.id.main_content, mContentFragment);
+    }
 }

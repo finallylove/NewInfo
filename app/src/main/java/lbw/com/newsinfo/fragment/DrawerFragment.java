@@ -46,7 +46,7 @@ public class DrawerFragment extends BaseFragment {
     private class DrawerItemClickListener implements ListView.OnItemClickListener {
         @Override
         public void onItemClick(AdapterView parent, View view, int position, long id) {
-            ((MainActivity)getActivity()).closeDrawer(mDrawerTitles[position]);
+            ((MainActivity)getActivity()).setNewsData(mDrawerTitles[position]);
         }
     }
 }
