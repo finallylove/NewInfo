@@ -35,7 +35,7 @@ public class MainActivity extends BaseActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         ButterKnife.inject(this);
-        mDrawerTitle = getTitle();
+        mTitle=mDrawerTitle = getTitle();
         mDrawerToggle = new ActionBarDrawerToggle(
                 this,
                 mDrawerLayout,
@@ -55,9 +55,9 @@ public class MainActivity extends BaseActivity {
             }
         };
 
-        mTitle = getResources().getStringArray(R.array.drawer_titles)[0];
         getSupportActionBar().setTitle(mTitle);
         mDrawerLayout.setDrawerListener(mDrawerToggle);
+        setNewsData(getResources().getStringArray(R.array.drawer_titles)[0]);
         replaceFragment(R.id.left_drawer, new DrawerFragment());
     }
 
