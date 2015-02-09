@@ -4,14 +4,19 @@ import android.content.Context;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v4.widget.SwipeRefreshLayout;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Toast;
 
+import com.android.volley.GsonRequest;
+import com.android.volley.Response;
 import com.etsy.android.grid.StaggeredGridView;
 import com.joanzapata.android.QuickAdapter;
 import com.nhaarman.listviewanimations.appearance.AnimationAdapter;
+
+import java.util.ArrayList;
 
 import butterknife.ButterKnife;
 import butterknife.InjectView;
@@ -19,6 +24,8 @@ import lbw.com.newsinfo.BaseFragment;
 import lbw.com.newsinfo.R;
 import lbw.com.newsinfo.adapter.CardsAnimationAdapter;
 import lbw.com.newsinfo.adapter.FeedsAdapter;
+import lbw.com.newsinfo.entity.NewsEntity;
+import lbw.com.newsinfo.net.HttpApi;
 import lbw.com.newsinfo.view.MultiSwipeRefreshLayout;
 
 /**
@@ -45,26 +52,50 @@ public class FeedsFragment extends BaseFragment implements SwipeRefreshLayout.On
 
     @Override
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
-        mContext=getActivity();
+        mContext = getActivity();
         View contentView = inflater.inflate(R.layout.fragment_feed, container, false);
         ButterKnife.inject(this, contentView);
+        mSwipeRefreshLayout.setOnRefreshListener(this);
         mSwipeRefreshLayout.setColorSchemeResources(android.R.color.holo_blue_bright,
                 android.R.color.holo_green_light,
                 android.R.color.holo_orange_light,
                 android.R.color.holo_red_light);
-        mAdapter=new FeedsAdapter(mContext);
-        AnimationAdapter animationAdapter=new CardsAnimationAdapter(mAdapter);
+        mAdapter = new FeedsAdapter(mContext);
+        AnimationAdapter animationAdapter = new CardsAnimationAdapter(mAdapter);
         animationAdapter.setAbsListView(mGridView);
         mGridView.setAdapter(animationAdapter);
-
-
 
         return contentView;
     }
 
     @Override
     public void onRefresh() {
-
+        loadData("0");
     }
 
+    private void loadData(String next) {
+        if ("0".equals(next)) {
+            if (!mSwipeRefreshLayout.isRefreshing())
+                mSwipeRefreshLayout.setRefreshing(true);
+            executeRequest(new GsonRequest(HttpApi.NEWS_LAST, FeedRequestData.class, responseListener(next), errorListener()));
+        }
+    }
+
+    private Response.Listener<FeedRequestData> responseListener(String page) {
+        final boolean isRefreshFromTop = ("0".equals(page));
+        return new Response.Listener<FeedRequestData>() {
+
+            @Override
+            public void onResponse(FeedRequestData response) {
+                mSwipeRefreshLayout.setRefreshing(!isRefreshFromTop);
+                for (NewsEntity entity : response.stories)
+                    Log.e("TAG", entity.toString());
+            }
+        };
+    }
+
+    public static class FeedRequestData {
+        public ArrayList<NewsEntity> stories;
+        public String date;
+    }
 }
