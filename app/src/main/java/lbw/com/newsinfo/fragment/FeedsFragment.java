@@ -18,7 +18,7 @@ import lbw.com.newsinfo.R;
 import lbw.com.newsinfo.view.MultiSwipeRefreshLayout;
 
 /**
- * Created by storm on 14-3-25.
+ * Created by lbw in 2015.2.19
  */
 public class FeedsFragment extends BaseFragment implements SwipeRefreshLayout.OnRefreshListener {
     public static final String EXTRA_TITLE = "extra_title";
