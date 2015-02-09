@@ -1,20 +1,24 @@
 package lbw.com.newsinfo.fragment;
 
+import android.content.Context;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v4.widget.SwipeRefreshLayout;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Toast;
 
-import com.dexafree.materialList.cards.SimpleCard;
-import com.dexafree.materialList.cards.SmallImageCard;
-import com.dexafree.materialList.view.MaterialListView;
+import com.etsy.android.grid.StaggeredGridView;
+import com.joanzapata.android.QuickAdapter;
+import com.nhaarman.listviewanimations.appearance.AnimationAdapter;
 
 import butterknife.ButterKnife;
 import butterknife.InjectView;
 import lbw.com.newsinfo.BaseFragment;
 import lbw.com.newsinfo.R;
+import lbw.com.newsinfo.adapter.CardsAnimationAdapter;
+import lbw.com.newsinfo.adapter.FeedsAdapter;
 import lbw.com.newsinfo.view.MultiSwipeRefreshLayout;
 
 /**
@@ -23,23 +27,13 @@ import lbw.com.newsinfo.view.MultiSwipeRefreshLayout;
 public class FeedsFragment extends BaseFragment implements SwipeRefreshLayout.OnRefreshListener {
     public static final String EXTRA_TITLE = "extra_title";
 
-    @InjectView(R.id.material_listview)
-    MaterialListView mListView;
+    Context mContext;
     @InjectView(R.id.swipe_container)
     MultiSwipeRefreshLayout mSwipeRefreshLayout;
+    @InjectView(R.id.material_listview)
+    StaggeredGridView mGridView;
 
-//    @InjectView(R.id.swipe_container)
-//    SwipeRefreshLayout mSwipeLayout;
-//
-//    @InjectView(R.id.grid_view)
-//    PageStaggeredGridView gridView;
-//
-//    private MenuItem mRefreshItem;
-//
-//    private Category mCategory;
-//    private FeedsDataHelper mDataHelper;
-//    private FeedsAdapter mAdapter;
-//    private String mPage = "0";
+    FeedsAdapter mAdapter;
 
     public static FeedsFragment newInstance(String title) {
         FeedsFragment fragment = new FeedsFragment();
@@ -51,23 +45,19 @@ public class FeedsFragment extends BaseFragment implements SwipeRefreshLayout.On
 
     @Override
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
+        mContext=getActivity();
         View contentView = inflater.inflate(R.layout.fragment_feed, container, false);
         ButterKnife.inject(this, contentView);
-        mListView.setCardAnimation(MaterialListView.CardAnimation.SWING_BOTTOM_IN);
-        mSwipeRefreshLayout.setColorSchemeColors(android.R.color.holo_blue_bright,
+        mSwipeRefreshLayout.setColorSchemeResources(android.R.color.holo_blue_bright,
                 android.R.color.holo_green_light,
                 android.R.color.holo_orange_light,
                 android.R.color.holo_red_light);
+        mAdapter=new FeedsAdapter(mContext);
+        AnimationAdapter animationAdapter=new CardsAnimationAdapter(mAdapter);
+        animationAdapter.setAbsListView(mGridView);
+        mGridView.setAdapter(animationAdapter);
 
-        String description = "Lorem ipsum dolor sit amet";
-        for (int i = 0; i < 35; i++) {
-            String title = "Card number " + (i + 1);
-            SimpleCard card = new SmallImageCard(getActivity());
-            card.setDescription(description);
-            card.setTitle(title);
-            card.setDrawable(R.drawable.ic_launcher);
-            mListView.add(card);
-        }
+
 
         return contentView;
     }
@@ -77,169 +67,4 @@ public class FeedsFragment extends BaseFragment implements SwipeRefreshLayout.On
 
     }
 
-    //    @Override
-//    public void onCreate(Bundle savedInstanceState) {
-//        super.onCreate(savedInstanceState);
-//        setHasOptionsMenu(true);
-//    }
-//
-//    @Override
-//    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-//        View contentView = inflater.inflate(R.layout.fragment_feed, container, false);
-//        ButterKnife.inject(this, contentView);
-//
-//        parseArgument();
-//        mDataHelper = new FeedsDataHelper(App.getContext(), mCategory);
-//        mAdapter = new FeedsAdapter(getActivity(), gridView);
-//        View header = new View(getActivity());
-//        gridView.addHeaderView(header);
-//        AnimationAdapter animationAdapter = new CardsAnimationAdapter(mAdapter);
-//        animationAdapter.setAbsListView(gridView);
-//        gridView.setAdapter(animationAdapter);
-//        gridView.setLoadNextListener(new OnLoadNextListener() {
-//            @Override
-//            public void onLoadNext() {
-//                loadNext();
-//            }
-//        });
-//
-//        gridView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-//            @Override
-//            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-//                String imageUrl = mAdapter.getItem(position - gridView.getHeaderViewsCount()).images.large;
-//                Intent intent = new Intent(getActivity(), ImageViewActivity.class);
-//                intent.putExtra(ImageViewActivity.IMAGE_URL, imageUrl);
-//                startActivity(intent);
-//            }
-//        });
-//
-//        initActionBar();
-//        mSwipeLayout.setOnRefreshListener(this);
-//        mSwipeLayout.setColorScheme(android.R.color.holo_blue_bright,
-//                android.R.color.holo_green_light,
-//                android.R.color.holo_orange_light,
-//                android.R.color.holo_red_light);
-//
-//        getLoaderManager().initLoader(0, null, this);
-//        loadFirst();
-//        return contentView;
-//    }
-//
-//    private void initActionBar() {
-//        View actionBarContainer = ActionBarUtils.findActionBarContainer(getActivity());
-//        actionBarContainer.setOnClickListener(new View.OnClickListener() {
-//            @Override
-//            public void onClick(View v) {
-////                ListViewUtils.smoothScrollListViewToTop(gridView);
-//                gridView.smoothScrollToPositionFromTop(0, 0);
-//            }
-//        });
-//    }
-//
-//    private void parseArgument() {
-//        Bundle bundle = getArguments();
-//        mCategory = Category.valueOf(bundle.getString(EXTRA_CATEGORY));
-//    }
-//
-//    private void loadData(String next) {
-//        if (!mSwipeLayout.isRefreshing() && ("0".equals(next))) {
-//            setRefreshing(true);
-//        }
-//        executeRequest(new GsonRequest(String.format(GagApi.LIST, mCategory.name(), next), Feed.FeedRequestData.class, responseListener(), errorListener()));
-//    }
-//
-//    private Response.Listener<Feed.FeedRequestData> responseListener() {
-//        final boolean isRefreshFromTop = ("0".equals(mPage));
-//        return new Response.Listener<Feed.FeedRequestData>() {
-//            @Override
-//            public void onResponse(final Feed.FeedRequestData response) {
-//                TaskUtils.executeAsyncTask(new AsyncTask<Object, Object, Object>() {
-//                    @Override
-//                    protected Object doInBackground(Object... params) {
-//                        if (isRefreshFromTop) {
-//                            mDataHelper.deleteAll();
-//                        }
-//                        mPage = response.getPage();
-//                        ArrayList<Feed> feeds = response.data;
-//                        mDataHelper.bulkInsert(feeds);
-//                        return null;
-//                    }
-//
-//                    @Override
-//                    protected void onPostExecute(Object o) {
-//                        super.onPostExecute(o);
-//                        if (isRefreshFromTop) {
-//                            setRefreshing(false);
-//                        } else {
-//                            gridView.setState(LoadingFooter.State.Idle);
-//                        }
-//                    }
-//                });
-//            }
-//        };
-//    }
-//
-//    protected Response.ErrorListener errorListener() {
-//        return new Response.ErrorListener() {
-//            @Override
-//            public void onErrorResponse(VolleyError error) {
-//                ToastUtils.showShort(R.string.loading_failed);
-//                setRefreshing(false);
-//                gridView.setState(LoadingFooter.State.Idle, 3000);
-//            }
-//        };
-//    }
-//
-//    private void loadFirst() {
-//        mPage = "0";
-//        loadData(mPage);
-//    }
-//
-//    private void loadNext() {
-//        loadData(mPage);
-//    }
-//
-//    public void loadFirstAndScrollToTop() {
-//        // TODO: gridView scroll to top
-//        loadFirst();
-//    }
-//
-//    @Override
-//    public Loader<Cursor> onCreateLoader(int id, Bundle args) {
-//        return mDataHelper.getCursorLoader();
-//    }
-//
-//    @Override
-//    public void onLoadFinished(Loader<Cursor> loader, Cursor data) {
-//        mAdapter.changeCursor(data);
-//        if (data != null && data.getCount() == 0) {
-//            loadFirst();
-//        }
-//    }
-//
-//    @Override
-//    public void onLoaderReset(Loader<Cursor> loader) {
-//        mAdapter.changeCursor(null);
-//    }
-//
-//    @Override
-//    public void onRefresh() {
-//        loadFirst();
-//    }
-//
-//    @Override
-//    public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
-//        mRefreshItem = menu.findItem(R.id.action_refresh);
-//        super.onCreateOptionsMenu(menu, inflater);
-//    }
-//
-//    private void setRefreshing(boolean refreshing) {
-//        mSwipeLayout.setRefreshing(refreshing);
-//        if (mRefreshItem == null) return;
-//
-//        if (refreshing)
-//            mRefreshItem.setActionView(R.layout.actionbar_refresh_progress);
-//        else
-//            mRefreshItem.setActionView(null);
-//    }
 }
