@@ -10,9 +10,6 @@ import android.util.AttributeSet;
 import lbw.com.newsinfo.R;
 
 
-/**
- * Created by Daniel on 09.11.2014.
- */
 public class MultiSwipeRefreshLayout extends SwipeRefreshLayout {
     private CanChildScrollUpCallback mCanChildScrollUpCallback;
 

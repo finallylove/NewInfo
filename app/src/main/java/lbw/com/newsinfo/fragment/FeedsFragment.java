@@ -106,14 +106,14 @@ public class FeedsFragment extends BaseFragment implements SwipeRefreshLayout.On
                 }
                 next = response.date;
                 if (mList != null && mList.size() > 0)
-                    setNewsData(mList);
+                    refreshNewsData(isRefreshFromTop);
             }
         };
     }
 
-    public void setNewsData(ArrayList<NewsEntity> list) {
-        if (mAdapter == null) {
-            mAdapter = new FeedsAdapter(mContext, list);
+    public void refreshNewsData(boolean isRefreshFromTop) {
+        if (mAdapter == null || isRefreshFromTop) {
+            mAdapter = new FeedsAdapter(mContext, mList);
             mAnimationAdapter = new CardsAnimationAdapter(mAdapter);
             mAnimationAdapter.setAbsListView(mGridView);
             mGridView.setAdapter(mAnimationAdapter);
