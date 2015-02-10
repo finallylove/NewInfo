@@ -29,7 +29,7 @@ import java.util.Locale;
 public class VolleyLog {
     public static String TAG = "Volley";
 
-    public static boolean sDebug = false;
+    public static boolean sDebug = true;
 
     public static void v(String format, Object... args) {
         if (sDebug) {

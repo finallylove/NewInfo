@@ -17,6 +17,7 @@ import com.joanzapata.android.QuickAdapter;
 import com.nhaarman.listviewanimations.appearance.AnimationAdapter;
 
 import java.util.ArrayList;
+import java.util.List;
 
 import butterknife.ButterKnife;
 import butterknife.InjectView;
@@ -27,20 +28,26 @@ import lbw.com.newsinfo.adapter.FeedsAdapter;
 import lbw.com.newsinfo.entity.NewsEntity;
 import lbw.com.newsinfo.net.HttpApi;
 import lbw.com.newsinfo.view.MultiSwipeRefreshLayout;
+import lbw.com.newsinfo.view.OnLoadNextListener;
+import lbw.com.newsinfo.view.PageStaggeredGridView;
 
 /**
  * Created by lbw in 2015.2.19
  */
-public class FeedsFragment extends BaseFragment implements SwipeRefreshLayout.OnRefreshListener {
+public class FeedsFragment extends BaseFragment implements SwipeRefreshLayout.OnRefreshListener,OnLoadNextListener{
     public static final String EXTRA_TITLE = "extra_title";
 
     Context mContext;
     @InjectView(R.id.swipe_container)
     MultiSwipeRefreshLayout mSwipeRefreshLayout;
     @InjectView(R.id.material_listview)
-    StaggeredGridView mGridView;
+    PageStaggeredGridView mGridView;
 
     FeedsAdapter mAdapter;
+    AnimationAdapter mAnimationAdapter;
+
+    public ArrayList<NewsEntity> mList;
+    public String next;
 
     public static FeedsFragment newInstance(String title) {
         FeedsFragment fragment = new FeedsFragment();
@@ -60,11 +67,8 @@ public class FeedsFragment extends BaseFragment implements SwipeRefreshLayout.On
                 android.R.color.holo_green_light,
                 android.R.color.holo_orange_light,
                 android.R.color.holo_red_light);
-        mAdapter = new FeedsAdapter(mContext);
-        AnimationAdapter animationAdapter = new CardsAnimationAdapter(mAdapter);
-        animationAdapter.setAbsListView(mGridView);
-        mGridView.setAdapter(animationAdapter);
-
+        loadData("0");
+        mGridView.setLoadNextListener(this);
         return contentView;
     }
 
@@ -73,11 +77,18 @@ public class FeedsFragment extends BaseFragment implements SwipeRefreshLayout.On
         loadData("0");
     }
 
+    @Override
+    public void onLoadNext() {
+        loadData(next);
+    }
+
     private void loadData(String next) {
         if ("0".equals(next)) {
             if (!mSwipeRefreshLayout.isRefreshing())
                 mSwipeRefreshLayout.setRefreshing(true);
             executeRequest(new GsonRequest(HttpApi.NEWS_LAST, FeedRequestData.class, responseListener(next), errorListener()));
+        }else {
+            executeRequest(new GsonRequest(String.format(HttpApi.NEWS_LIST,next),FeedRequestData.class,responseListener(next),errorListener()));
         }
     }
 
@@ -87,12 +98,38 @@ public class FeedsFragment extends BaseFragment implements SwipeRefreshLayout.On
 
             @Override
             public void onResponse(FeedRequestData response) {
-                mSwipeRefreshLayout.setRefreshing(!isRefreshFromTop);
-                for (NewsEntity entity : response.stories)
-                    Log.e("TAG", entity.toString());
+                if (isRefreshFromTop) {
+                    mSwipeRefreshLayout.setRefreshing(!isRefreshFromTop);
+                    mList = response.stories;
+                }else {
+                    mList.addAll(response.stories);
+                }
+                next = response.date;
+                if (mList != null && mList.size() > 0)
+                    setNewsData(mList);
             }
         };
     }
+
+    public void setNewsData(ArrayList<NewsEntity> list) {
+        if (mAdapter == null) {
+            mAdapter = new FeedsAdapter(mContext, list);
+            mAnimationAdapter = new CardsAnimationAdapter(mAdapter);
+            mAnimationAdapter.setAbsListView(mGridView);
+            mGridView.setAdapter(mAnimationAdapter);
+        } else {
+            mAnimationAdapter.notifyDataSetChanged();
+            mGridView.setRefresh(false);
+        }
+    }
+
+    @Override
+    protected Response.ErrorListener errorListener() {
+        if (mSwipeRefreshLayout.isRefreshing())
+            mSwipeRefreshLayout.setRefreshing(false);
+        return super.errorListener();
+    }
+
 
     public static class FeedRequestData {
         public ArrayList<NewsEntity> stories;
