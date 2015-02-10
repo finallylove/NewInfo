@@ -7,7 +7,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
-    <com.etsy.android.grid.StaggeredGridView
+    <lbw.com.newsinfo.view.PageStaggeredGridView
         android:id="@+id/material_listview"
         android:layout_width="match_parent"
         android:layout_height="match_parent"

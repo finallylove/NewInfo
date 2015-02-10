@@ -33,7 +33,7 @@ public abstract class BaseFragment extends Fragment {
         return new Response.ErrorListener() {
             @Override
             public void onErrorResponse(VolleyError error) {
-                Toast.makeText(MyApp.getContext(), error.getMessage(), Toast.LENGTH_SHORT).show();
+                Toast.makeText(MyApp.getContext(), error.getMessage(), Toast.LENGTH_LONG).show();
             }
         };
     }
