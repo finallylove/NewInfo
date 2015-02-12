@@ -10,7 +10,7 @@ public class HttpApi {
 
     public static final String NEWS_LAST = HOST + "/latest";
 
-    public static final String NEWS_DETAIL = HOST + "/%1$s";
+    public static final String NEWS_DETAIL = "http://daily.zhihu.com/story/%1$s";
 
 
 }

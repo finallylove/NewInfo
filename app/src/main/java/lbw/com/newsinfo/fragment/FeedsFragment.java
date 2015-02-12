@@ -1,6 +1,7 @@
 package lbw.com.newsinfo.fragment;
 
 import android.content.Context;
+import android.content.Intent;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v4.widget.SwipeRefreshLayout;
@@ -8,6 +9,7 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.AdapterView;
 import android.widget.Toast;
 
 import com.android.volley.Cache;
@@ -29,6 +31,7 @@ import butterknife.ButterKnife;
 import butterknife.InjectView;
 import lbw.com.newsinfo.BaseFragment;
 import lbw.com.newsinfo.R;
+import lbw.com.newsinfo.activity.DetailActivity;
 import lbw.com.newsinfo.adapter.CardsAnimationAdapter;
 import lbw.com.newsinfo.adapter.FeedsAdapter;
 import lbw.com.newsinfo.adapter.NewsListAdapter;
@@ -41,7 +44,7 @@ import lbw.com.newsinfo.view.PageStaggeredGridView;
 /**
  * Created by lbw in 2015.2.19
  */
-public class FeedsFragment extends BaseFragment implements SwipeRefreshLayout.OnRefreshListener, OnLoadNextListener, MultiSwipeRefreshLayout.CanChildScrollUpCallback {
+public class FeedsFragment extends BaseFragment implements SwipeRefreshLayout.OnRefreshListener, OnLoadNextListener, MultiSwipeRefreshLayout.CanChildScrollUpCallback ,AdapterView.OnItemClickListener{
     public static final String EXTRA_TITLE = "extra_title";
 
     Context mContext;
@@ -79,6 +82,7 @@ public class FeedsFragment extends BaseFragment implements SwipeRefreshLayout.On
         mSwipeRefreshLayout.setCanChildScrollUpCallback(this);
         loadData("0");
         mGridView.setLoadNextListener(this);
+        mGridView.setOnItemClickListener(this);
         return contentView;
     }
 
@@ -159,9 +163,15 @@ public class FeedsFragment extends BaseFragment implements SwipeRefreshLayout.On
         return mGridView.getDistanceToTop() != 0;
     }
 
+    @Override
+    public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+        startActivity(new Intent(mContext, DetailActivity.class).putExtra("id",mList.get(position).id));
+    }
+
 
     public static class FeedRequestData {
         public ArrayList<NewsEntity> stories;
         public String date;
     }
+
 }

@@ -5,8 +5,11 @@ import android.os.Bundle;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarDrawerToggle;
+import android.view.MenuItem;
 import android.view.View;
 import android.widget.FrameLayout;
+import android.widget.Toast;
+
 import butterknife.ButterKnife;
 import butterknife.InjectView;
 import lbw.com.newsinfo.BaseActivity;
@@ -19,8 +22,6 @@ public class MainActivity extends BaseActivity {
 
     @InjectView(R.id.drawer_layout)
     DrawerLayout mDrawerLayout;
-    @InjectView(R.id.left_drawer)
-    FrameLayout mDrawer;
     private ActionBarDrawerToggle mDrawerToggle;
     private CharSequence mDrawerTitle;
     private CharSequence mTitle;
@@ -35,7 +36,7 @@ public class MainActivity extends BaseActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         ButterKnife.inject(this);
-        mTitle=mDrawerTitle = getTitle();
+        mTitle = mDrawerTitle = getTitle();
         mDrawerToggle = new ActionBarDrawerToggle(
                 this,
                 mDrawerLayout,
@@ -76,10 +77,10 @@ public class MainActivity extends BaseActivity {
 
     public void setNewsData(String title) {
         mDrawerLayout.closeDrawers();
-        if (mTitle == title)
+        if (mTitle.equals(title))
             return;
         mTitle = title;
-        mContentFragment=FeedsFragment.newInstance(title);
+        mContentFragment = FeedsFragment.newInstance(title);
         replaceFragment(R.id.main_content, mContentFragment);
     }
 }
