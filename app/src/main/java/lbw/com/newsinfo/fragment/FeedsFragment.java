@@ -10,12 +10,18 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Toast;
 
+import com.android.volley.Cache;
 import com.android.volley.GsonRequest;
 import com.android.volley.Response;
+import com.android.volley.VolleyError;
+import com.android.volley.toolbox.DiskBasedCache;
+import com.android.volley.toolbox.Volley;
 import com.etsy.android.grid.StaggeredGridView;
+import com.google.gson.Gson;
 import com.joanzapata.android.QuickAdapter;
 import com.nhaarman.listviewanimations.appearance.AnimationAdapter;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -25,6 +31,7 @@ import lbw.com.newsinfo.BaseFragment;
 import lbw.com.newsinfo.R;
 import lbw.com.newsinfo.adapter.CardsAnimationAdapter;
 import lbw.com.newsinfo.adapter.FeedsAdapter;
+import lbw.com.newsinfo.adapter.NewsListAdapter;
 import lbw.com.newsinfo.entity.NewsEntity;
 import lbw.com.newsinfo.net.HttpApi;
 import lbw.com.newsinfo.view.MultiSwipeRefreshLayout;
@@ -34,10 +41,12 @@ import lbw.com.newsinfo.view.PageStaggeredGridView;
 /**
  * Created by lbw in 2015.2.19
  */
-public class FeedsFragment extends BaseFragment implements SwipeRefreshLayout.OnRefreshListener,OnLoadNextListener{
+public class FeedsFragment extends BaseFragment implements SwipeRefreshLayout.OnRefreshListener, OnLoadNextListener, MultiSwipeRefreshLayout.CanChildScrollUpCallback {
     public static final String EXTRA_TITLE = "extra_title";
 
     Context mContext;
+    private final Gson mGson = new Gson();
+
     @InjectView(R.id.swipe_container)
     MultiSwipeRefreshLayout mSwipeRefreshLayout;
     @InjectView(R.id.material_listview)
@@ -67,6 +76,7 @@ public class FeedsFragment extends BaseFragment implements SwipeRefreshLayout.On
                 android.R.color.holo_green_light,
                 android.R.color.holo_orange_light,
                 android.R.color.holo_red_light);
+        mSwipeRefreshLayout.setCanChildScrollUpCallback(this);
         loadData("0");
         mGridView.setLoadNextListener(this);
         return contentView;
@@ -87,8 +97,8 @@ public class FeedsFragment extends BaseFragment implements SwipeRefreshLayout.On
             if (!mSwipeRefreshLayout.isRefreshing())
                 mSwipeRefreshLayout.setRefreshing(true);
             executeRequest(new GsonRequest(HttpApi.NEWS_LAST, FeedRequestData.class, responseListener(next), errorListener()));
-        }else {
-            executeRequest(new GsonRequest(String.format(HttpApi.NEWS_LIST,next),FeedRequestData.class,responseListener(next),errorListener()));
+        } else {
+            executeRequest(new GsonRequest(String.format(HttpApi.NEWS_LIST, next), FeedRequestData.class, responseListener(next), errorListener()));
         }
     }
 
@@ -101,7 +111,7 @@ public class FeedsFragment extends BaseFragment implements SwipeRefreshLayout.On
                 if (isRefreshFromTop) {
                     mSwipeRefreshLayout.setRefreshing(!isRefreshFromTop);
                     mList = response.stories;
-                }else {
+                } else {
                     mList.addAll(response.stories);
                 }
                 next = response.date;
@@ -118,16 +128,35 @@ public class FeedsFragment extends BaseFragment implements SwipeRefreshLayout.On
             mAnimationAdapter.setAbsListView(mGridView);
             mGridView.setAdapter(mAnimationAdapter);
         } else {
+//            mAdapter.b
             mAnimationAdapter.notifyDataSetChanged();
-            mGridView.setRefresh(false);
         }
+        mGridView.setRefresh(false);
     }
 
     @Override
     protected Response.ErrorListener errorListener() {
         if (mSwipeRefreshLayout.isRefreshing())
             mSwipeRefreshLayout.setRefreshing(false);
-        return super.errorListener();
+        return new Response.ErrorListener() {
+            @Override
+            public void onErrorResponse(VolleyError error) {
+                DiskBasedCache cache = new DiskBasedCache(new File(mContext.getCacheDir(), "volley"));
+                cache.initialize();
+                Cache.Entry entry=cache.get(HttpApi.NEWS_LAST);
+                Log.e("volley",new String(entry.data));
+                if (entry != null){
+                    FeedRequestData data=mGson.fromJson(new String(entry.data),FeedRequestData.class);
+                    mList=data.stories;
+                    refreshNewsData(true);
+                }
+            }
+        };
+    }
+
+    @Override
+    public boolean canSwipeRefreshChildScrollUp() {
+        return mGridView.getDistanceToTop() != 0;
     }
 
 

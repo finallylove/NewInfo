@@ -1,63 +1,54 @@
 package lbw.com.newsinfo.adapter;
 
 import android.content.Context;
+import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.BaseAdapter;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import com.nhaarman.listviewanimations.itemmanipulation.expandablelistitem.ExpandableListItemAdapter;
 import com.nostra13.universalimageloader.core.ImageLoader;
 import com.nostra13.universalimageloader.core.download.ImageDownloader;
 
 import org.w3c.dom.Text;
 
 import java.util.ArrayList;
+import java.util.List;
 
-import lbw.com.newsinfo.MyApp;
 import lbw.com.newsinfo.R;
 import lbw.com.newsinfo.entity.NewsEntity;
 
 /**
- * Created by lbw on 2015/2/9.
+ * Created by lbw on 2015/2/11.
  */
-public class FeedsAdapter extends BaseAdapter {
-
+public class NewsListAdapter extends ExpandableListItemAdapter {
     private Context mContext;
     private LayoutInflater mInflater;
     private ArrayList<NewsEntity> mList;
     private static final String ERROR_IMAGE = ImageDownloader.Scheme.DRAWABLE.wrap("R.drawable.icon_load_fail");
 
-    public FeedsAdapter(Context context, ArrayList<NewsEntity> list) {
+    public NewsListAdapter(@NonNull Context context, ArrayList<NewsEntity> list) {
+        super(context, list);
         mContext = context;
         mInflater = (LayoutInflater) mContext.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
         mList = list;
-
     }
 
+    @NonNull
     @Override
-    public int getCount() {
-        return mList.size();
+    public View getTitleView(int position, @Nullable View convertView, @NonNull ViewGroup parent) {
+        TextView textView=new TextView(mContext);
+        textView.setLayoutParams(new ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT));
+        textView.setText(mList.get(position).title);
+        return textView;
     }
 
+    @NonNull
     @Override
-    public Object getItem(int position) {
-        return mList.get(position);
-    }
-
-    @Override
-    public long getItemId(int position) {
-        return position;
-    }
-
-    private class ViewHolder {
-        TextView title;
-        ImageView newImage;
-    }
-
-    @Override
-    public View getView(int position, View convertView, ViewGroup parent) {
+    public View getContentView(int position, @Nullable View convertView, @NonNull ViewGroup parent) {
         ViewHolder holder;
         NewsEntity newsEntity = mList.get(position);
         if (convertView == null) {
@@ -75,5 +66,10 @@ public class FeedsAdapter extends BaseAdapter {
         else
             ImageLoader.getInstance().displayImage(newsEntity.images.get(0), holder.newImage);
         return convertView;
+    }
+
+    private class ViewHolder {
+        TextView title;
+        ImageView newImage;
     }
 }
