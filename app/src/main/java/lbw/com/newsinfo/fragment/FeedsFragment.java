@@ -44,7 +44,7 @@ import lbw.com.newsinfo.view.PageStaggeredGridView;
 /**
  * Created by lbw in 2015.2.19
  */
-public class FeedsFragment extends BaseFragment implements SwipeRefreshLayout.OnRefreshListener, OnLoadNextListener, MultiSwipeRefreshLayout.CanChildScrollUpCallback ,AdapterView.OnItemClickListener{
+public class FeedsFragment extends BaseFragment implements SwipeRefreshLayout.OnRefreshListener, OnLoadNextListener, MultiSwipeRefreshLayout.CanChildScrollUpCallback, AdapterView.OnItemClickListener {
     public static final String EXTRA_TITLE = "extra_title";
 
     Context mContext;
@@ -132,7 +132,6 @@ public class FeedsFragment extends BaseFragment implements SwipeRefreshLayout.On
             mAnimationAdapter.setAbsListView(mGridView);
             mGridView.setAdapter(mAnimationAdapter);
         } else {
-//            mAdapter.b
             mAnimationAdapter.notifyDataSetChanged();
         }
         mGridView.setRefresh(false);
@@ -140,19 +139,24 @@ public class FeedsFragment extends BaseFragment implements SwipeRefreshLayout.On
 
     @Override
     protected Response.ErrorListener errorListener() {
-        if (mSwipeRefreshLayout.isRefreshing())
-            mSwipeRefreshLayout.setRefreshing(false);
+
         return new Response.ErrorListener() {
             @Override
             public void onErrorResponse(VolleyError error) {
-                DiskBasedCache cache = new DiskBasedCache(new File(mContext.getCacheDir(), "volley"));
-                cache.initialize();
-                Cache.Entry entry=cache.get(HttpApi.NEWS_LAST);
-                Log.e("volley",new String(entry.data));
-                if (entry != null){
-                    FeedRequestData data=mGson.fromJson(new String(entry.data),FeedRequestData.class);
-                    mList=data.stories;
-                    refreshNewsData(true);
+                if (mSwipeRefreshLayout.isRefreshing()) {
+                    mSwipeRefreshLayout.setRefreshing(false);
+                    mGridView.setRefresh(true);
+                    DiskBasedCache cache = new DiskBasedCache(new File(mContext.getCacheDir(), "volley"));
+                    cache.initialize();
+                    Cache.Entry entry = cache.get(HttpApi.NEWS_LAST);
+                    Log.e("volley", new String(entry.data));
+                    if (entry != null) {
+                        FeedRequestData data = mGson.fromJson(new String(entry.data), FeedRequestData.class);
+                        mList = data.stories;
+                        refreshNewsData(true);
+                    }
+                } else {
+                    //加载更多Error
                 }
             }
         };
@@ -165,7 +169,7 @@ public class FeedsFragment extends BaseFragment implements SwipeRefreshLayout.On
 
     @Override
     public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-        startActivity(new Intent(mContext, DetailActivity.class).putExtra("id",mList.get(position).id));
+        startActivity(new Intent(mContext, DetailActivity.class).putExtra("id", mList.get(position).id));
     }
 
 
