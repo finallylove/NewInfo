@@ -55,6 +55,12 @@ public abstract class BaseActivity extends ActionBarActivity {
         params = new RelativeLayout.LayoutParams(RelativeLayout.LayoutParams.MATCH_PARENT, RelativeLayout.LayoutParams.MATCH_PARENT);
         params.addRule(RelativeLayout.BELOW, R.id.toolbar);
         layout.addView(view, params);
+        mToolbar.setNavigationOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                onBackPressed();
+            }
+        });
         super.setContentView(layout);
     }
 

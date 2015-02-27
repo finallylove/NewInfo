@@ -2,6 +2,7 @@ package lbw.com.newsinfo.fragment;
 
 import android.app.Activity;
 import android.content.Context;
+import android.content.Intent;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v4.widget.SwipeRefreshLayout;
@@ -29,6 +30,8 @@ import butterknife.ButterKnife;
 import butterknife.InjectView;
 import lbw.com.newsinfo.BaseFragment;
 import lbw.com.newsinfo.R;
+import lbw.com.newsinfo.activity.DetailActivity;
+import lbw.com.newsinfo.activity.ImageShowActivity;
 import lbw.com.newsinfo.entity.NewsDetailEntity;
 import lbw.com.newsinfo.net.HttpApi;
 import lbw.com.newsinfo.util.PhoneUtils;
@@ -89,7 +92,7 @@ public class DetailFragment extends BaseFragment implements SwipeRefreshLayout.O
                 android.R.color.holo_orange_light,
                 android.R.color.holo_red_light);
         mWebView.setScrollBarStyle(View.SCROLLBARS_INSIDE_OVERLAY);
-        mWebView.addJavascriptInterface(new JavaScriptObject((Activity)mContext),"injectedObject");
+        mWebView.addJavascriptInterface(new JavaScriptObject((Activity) mContext), "injectedObject");
         WebSettings settings = mWebView.getSettings();
         settings.setJavaScriptEnabled(true);
         settings.setSaveFormData(false);
@@ -102,7 +105,7 @@ public class DetailFragment extends BaseFragment implements SwipeRefreshLayout.O
                 mSwipeRefreshLayout.setRefreshing(false);
             }
         });
-        mWebView.setWebChromeClient(new WebChromeClient(){
+        mWebView.setWebChromeClient(new WebChromeClient() {
             @Override
             public boolean onJsAlert(WebView view, String url, String message, JsResult result) {
                 return super.onJsAlert(view, url, message, result);
@@ -147,9 +150,8 @@ public class DetailFragment extends BaseFragment implements SwipeRefreshLayout.O
         Elements es = doc.getElementsByClass("content-image");
         for (Element e : es) {
             e.attr("onclick", "injectedObject.openImage('"+e.attr("src")+"')");
-            e.attr("width","100%");
+            e.attr("width", "100%");
         }
-        Log.e("TAG", "doc=" + doc.html());
         return doc.html();
     }
 
@@ -163,7 +165,9 @@ public class DetailFragment extends BaseFragment implements SwipeRefreshLayout.O
 
         @JavascriptInterface
         public void openImage(String url) {
-                Log.e("TAG","url="+url);
+            Intent intent = new Intent(mInstance, ImageShowActivity.class);
+            intent.putExtra("image_url", url);
+            mInstance.startActivity(intent);
         }
     }
 

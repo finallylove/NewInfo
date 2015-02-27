@@ -24,6 +24,13 @@
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value=".activity.MainActivity"/>
         </activity>
+        <activity
+            android:name=".activity.ImageShowActivity"
+            android:label="@string/title_activity_image_show" >
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value=".activity.DetailActivity"/>
+        </activity>
     </application>
 
     <uses-permission android:name="android.permission.INTERNET"/>
