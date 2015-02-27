@@ -5,22 +5,17 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v4.widget.SwipeRefreshLayout;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
-import android.widget.Toast;
 
 import com.android.volley.Cache;
 import com.android.volley.GsonRequest;
 import com.android.volley.Response;
 import com.android.volley.VolleyError;
 import com.android.volley.toolbox.DiskBasedCache;
-import com.android.volley.toolbox.Volley;
-import com.etsy.android.grid.StaggeredGridView;
 import com.google.gson.Gson;
-import com.joanzapata.android.QuickAdapter;
 import com.nhaarman.listviewanimations.appearance.AnimationAdapter;
 
 import java.io.File;
@@ -149,7 +144,6 @@ public class FeedsFragment extends BaseFragment implements SwipeRefreshLayout.On
                     DiskBasedCache cache = new DiskBasedCache(new File(mContext.getCacheDir(), "volley"));
                     cache.initialize();
                     Cache.Entry entry = cache.get(HttpApi.NEWS_LAST);
-                    Log.e("volley", new String(entry.data));
                     if (entry != null) {
                         FeedRequestData data = mGson.fromJson(new String(entry.data), FeedRequestData.class);
                         mList = data.stories;

@@ -19,4 +19,20 @@ public class NewsDetailEntity implements Serializable {
 	public String ga_prefix;
 	public long id;
 	public ArrayList<String> css;
+
+    @Override
+    public String toString() {
+        return "NewsDetailEntity{" +
+                "body='" + body + '\'' +
+                ", image_source='" + image_source + '\'' +
+                ", title='" + title + '\'' +
+                ", image='" + image + '\'' +
+                ", share_url='" + share_url + '\'' +
+                ", js=" + js +
+                ", type=" + type +
+                ", ga_prefix='" + ga_prefix + '\'' +
+                ", id=" + id +
+                ", css=" + css +
+                '}';
+    }
 }

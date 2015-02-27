@@ -1,32 +1,48 @@
 package lbw.com.newsinfo.fragment;
 
+import android.app.Activity;
 import android.content.Context;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v4.widget.SwipeRefreshLayout;
+import android.util.Log;
 import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.webkit.JavascriptInterface;
+import android.webkit.JsResult;
+import android.webkit.WebChromeClient;
 import android.webkit.WebSettings;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
+
+import com.android.volley.GsonRequest;
+import com.android.volley.Response;
+
+import org.jsoup.Jsoup;
+import org.jsoup.nodes.Document;
+import org.jsoup.nodes.Element;
+import org.jsoup.select.Elements;
 
 import butterknife.ButterKnife;
 import butterknife.InjectView;
 import lbw.com.newsinfo.BaseFragment;
 import lbw.com.newsinfo.R;
+import lbw.com.newsinfo.entity.NewsDetailEntity;
 import lbw.com.newsinfo.net.HttpApi;
+import lbw.com.newsinfo.util.PhoneUtils;
 import lbw.com.newsinfo.view.MultiSwipeRefreshLayout;
 
 /**
  * Created by lbw on 2015/2/12.
  */
-public class DetailFragment extends BaseFragment implements SwipeRefreshLayout.OnRefreshListener{
+public class DetailFragment extends BaseFragment implements SwipeRefreshLayout.OnRefreshListener {
     private static DetailFragment mDetailFragment;
     private Context mContext;
     private LayoutInflater mInflater;
     private long mNewsId;
+    private NewsDetailEntity mNewsDetail;
 
     @InjectView(R.id.web_view)
     WebView mWebView;
@@ -52,6 +68,7 @@ public class DetailFragment extends BaseFragment implements SwipeRefreshLayout.O
         } else {
             mNewsId = savedInstanceState.getLong("id");
         }
+
     }
 
     @Override
@@ -72,16 +89,23 @@ public class DetailFragment extends BaseFragment implements SwipeRefreshLayout.O
                 android.R.color.holo_orange_light,
                 android.R.color.holo_red_light);
         mWebView.setScrollBarStyle(View.SCROLLBARS_INSIDE_OVERLAY);
+        mWebView.addJavascriptInterface(new JavaScriptObject((Activity)mContext),"injectedObject");
         WebSettings settings = mWebView.getSettings();
         settings.setJavaScriptEnabled(true);
         settings.setSaveFormData(false);
-        mWebView.loadUrl(String.format(HttpApi.NEWS_DETAIL, String.valueOf(mNewsId)));
-        mWebView.setWebViewClient(new WebViewClient(){
 
+        executeRequest(new GsonRequest(String.format(HttpApi.NEW_DETAIL, mNewsId), NewsDetailEntity.class, responseListener(), errorListener()));
+        mWebView.setWebViewClient(new WebViewClient() {
             @Override
             public void onPageFinished(WebView view, String url) {
                 super.onPageFinished(view, url);
                 mSwipeRefreshLayout.setRefreshing(false);
+            }
+        });
+        mWebView.setWebChromeClient(new WebChromeClient(){
+            @Override
+            public boolean onJsAlert(WebView view, String url, String message, JsResult result) {
+                return super.onJsAlert(view, url, message, result);
             }
         });
         return contentView;
@@ -97,6 +121,51 @@ public class DetailFragment extends BaseFragment implements SwipeRefreshLayout.O
 
     @Override
     public void onRefresh() {
-        mWebView.reload();
+        executeRequest(new GsonRequest(String.format(HttpApi.NEW_DETAIL, mNewsId), NewsDetailEntity.class, responseListener(), errorListener()));
     }
+
+    private Response.Listener<NewsDetailEntity> responseListener() {
+        return new Response.Listener<NewsDetailEntity>() {
+            @Override
+            public void onResponse(NewsDetailEntity response) {
+                mNewsDetail = response;
+                if (mNewsDetail == null || mNewsDetail.body == null || mNewsDetail.body.length() == 0)
+                    return;
+                mWebView.loadDataWithBaseURL(null, modifyImgTag(mNewsDetail.body), "text/html", "UTF-8", null);
+            }
+        };
+    }
+
+    private String modifyImgTag(String html) {
+        StringBuilder sb = new StringBuilder();
+        sb.append("<div class=\"img-wrap\">")
+                .append("<img class=\"content-image\" src=\"").append(mNewsDetail.image)
+                .append("\" alt=\"\">")
+                .append("<div class=\"img-mask\"></div>");
+        html = html.replace("<div class=\"img-place-holder\">", sb.toString());
+        Document doc = Jsoup.parse(html);
+        Elements es = doc.getElementsByClass("content-image");
+        for (Element e : es) {
+            e.attr("onclick", "injectedObject.openImage('"+e.attr("src")+"')");
+            e.attr("width","100%");
+        }
+        Log.e("TAG", "doc=" + doc.html());
+        return doc.html();
+    }
+
+    public static class JavaScriptObject {
+
+        private Activity mInstance;
+
+        public JavaScriptObject(Activity instance) {
+            mInstance = instance;
+        }
+
+        @JavascriptInterface
+        public void openImage(String url) {
+                Log.e("TAG","url="+url);
+        }
+    }
+
 }
+
