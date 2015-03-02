@@ -20,7 +20,6 @@ import com.nhaarman.listviewanimations.appearance.AnimationAdapter;
 
 import java.io.File;
 import java.util.ArrayList;
-import java.util.List;
 
 import butterknife.ButterKnife;
 import butterknife.InjectView;
@@ -29,7 +28,6 @@ import lbw.com.newsinfo.R;
 import lbw.com.newsinfo.activity.DetailActivity;
 import lbw.com.newsinfo.adapter.CardsAnimationAdapter;
 import lbw.com.newsinfo.adapter.FeedsAdapter;
-import lbw.com.newsinfo.adapter.NewsListAdapter;
 import lbw.com.newsinfo.entity.NewsEntity;
 import lbw.com.newsinfo.net.HttpApi;
 import lbw.com.newsinfo.view.MultiSwipeRefreshLayout;
