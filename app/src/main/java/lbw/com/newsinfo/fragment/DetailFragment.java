@@ -142,16 +142,22 @@ public class DetailFragment extends BaseFragment implements SwipeRefreshLayout.O
     private String modifyImgTag(String html) {
         StringBuilder sb = new StringBuilder();
         sb.append("<div class=\"img-wrap\">")
-                .append("<img class=\"content-image\" src=\"").append(mNewsDetail.image)
+                .append("<img class=\"title-image\" src=\"").append(mNewsDetail.image)
                 .append("\" alt=\"\">")
                 .append("<div class=\"img-mask\"></div>");
         html = html.replace("<div class=\"img-place-holder\">", sb.toString());
         Document doc = Jsoup.parse(html);
         Elements es = doc.getElementsByClass("content-image");
         for (Element e : es) {
-            e.attr("onclick", "injectedObject.openImage('"+e.attr("src")+"')");
+            e.attr("onclick", "injectedObject.openImage('" + e.attr("src") + "')");
             e.attr("width", "100%");
         }
+        es = doc.getElementsByClass("title-image");
+        es.get(0).attr("width", "100%");
+        es.get(0).attr("height", "40%");
+        es=doc.getElementsByClass("headline-background-link");
+        es.select(">div[class]").remove();
+
         return doc.html();
     }
 
