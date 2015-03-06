@@ -1,7 +1,9 @@
 # NewInfo
 
 此项目界面制作涉及以下官方文档和三方库：
+
       1、以ToolBar作为App标题栏
+      
       2、为标题栏添加drawer进行menu显示
       3、使用StaggeredGridView制作列表瀑布流效果
       4、使用ListViewAnimations制作列表展示效果(LayoutAnimation可达同样效果)
